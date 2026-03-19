@@ -1,0 +1,7 @@
+{
+  "name": "Copy of SPACEYA",
+  "description": "A comprehensive space and property lifecycle management application for agents and tenants, featuring AI-powered maintenance assessment and role-based dashboards.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

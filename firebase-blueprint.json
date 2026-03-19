@@ -1,0 +1,219 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "displayUID": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["ADMIN", "AGENT", "TENANT", "LANDLORD", "PROPERTY_MANAGER"] },
+        "assignedPropertyId": { "type": "string" },
+        "phone": { "type": "string" },
+        "agentTier": { "type": "string", "enum": ["BRONZE", "SILVER", "GOLD", "ELITE"] },
+        "reputationScore": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "walletBalance": { "type": "number" },
+        "referralCode": { "type": "string" },
+        "uplineAgentId": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Property": {
+      "title": "Property",
+      "description": "Property listing information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "state": { "type": "string" },
+        "rent": { "type": "number" },
+        "status": { "type": "string", "enum": ["DRAFT", "LISTED", "OCCUPIED", "VACANT", "ARCHIVED", "LEGAL_REVIEW"] },
+        "agentId": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["RESIDENTIAL", "COMMERCIAL", "LAND"] },
+        "type": { "type": "string" },
+        "rentStartDate": { "type": "string", "format": "date-time" },
+        "rentExpiryDate": { "type": "string", "format": "date-time" },
+        "transactionType": { "type": "string", "enum": ["LEASE", "SALE", "SHORT_LET"] },
+        "legalScore": { "type": "number" },
+        "legalFlags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "name", "location", "state", "rent", "status", "agentId", "category", "type"]
+    },
+    "TenantApplication": {
+      "title": "TenantApplication",
+      "description": "Application for property rental",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "displayUID": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "agentId": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "REVIEWING", "APPROVED", "REJECTED", "MORE_INFO_REQUIRED"] },
+        "submissionDate": { "type": "string", "format": "date-time" },
+        "firstName": { "type": "string" },
+        "surname": { "type": "string" },
+        "middleName": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "maritalStatus": { "type": "string", "enum": ["Single", "Married", "Divorced", "Widow", "Widower", "Separated"] },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "currentHomeAddress": { "type": "string" },
+        "occupation": { "type": "string" },
+        "familySize": { "type": "number" },
+        "phoneNumber": { "type": "string" },
+        "reasonForRelocating": { "type": "string" },
+        "currentLandlordName": { "type": "string" },
+        "currentLandlordPhone": { "type": "string" },
+        "verificationType": { "type": "string", "enum": ["NIN", "Passport", "Voter's Card", "Driver's License"] },
+        "verificationIdNumber": { "type": "string" },
+        "verificationUrl": { "type": "string" },
+        "passportPhotoUrl": { "type": "string" },
+        "agentIdCode": { "type": "string" },
+        "signature": { "type": "string" },
+        "applicationDate": { "type": "string", "format": "date" },
+        "riskScore": { "type": "number" },
+        "aiRecommendation": { "type": "string" }
+      },
+      "required": ["id", "userId", "propertyId", "agentId", "status", "submissionDate"]
+    },
+    "Agreement": {
+      "title": "Agreement",
+      "description": "Rental agreement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "version": { "type": "number" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "documentUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "expired", "terminated"] }
+      },
+      "required": ["id", "propertyId", "tenantId", "version", "startDate", "endDate", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["paid", "pending", "late"] },
+        "type": { "type": "string", "enum": ["RENT", "SERVICE_CHARGE", "AGENCY_FEE", "LEGAL_FEE", "CAUTION_FEE"] }
+      },
+      "required": ["id", "tenantId", "propertyId", "amount", "date", "status", "type"]
+    },
+    "Commission": {
+      "title": "Commission",
+      "description": "Agent commission",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["LEASE", "SALE", "REFERRAL", "RENEWAL"] },
+        "status": { "type": "string", "enum": ["LOCKED", "AVAILABLE", "PAID"] },
+        "dateEarned": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "agentId", "propertyId", "amount", "type", "status", "dateEarned"]
+    },
+    "MaintenanceTicket": {
+      "title": "MaintenanceTicket",
+      "description": "Maintenance request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "issue": { "type": "string" },
+        "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "RESOLVED"] },
+        "priority": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "EMERGENCY"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "aiAssessment": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["id", "tenantId", "propertyId", "issue", "status", "priority", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["INFO", "WARNING", "ERROR", "SUCCESS"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" },
+        "linkTo": { "type": "string" },
+        "attachmentUrl": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "message", "type", "timestamp", "isRead"]
+    },
+    "Referral": {
+      "title": "Referral",
+      "description": "Agent referral",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "referrerAgentId": { "type": "string" },
+        "referredUserId": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "CONVERTED"] },
+        "date": { "type": "string", "format": "date-time" },
+        "commissionEarned": { "type": "number" }
+      },
+      "required": ["id", "referrerAgentId", "referredUserId", "status", "date", "commissionEarned"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Property listings"
+    },
+    "/applications/{applicationId}": {
+      "schema": "TenantApplication",
+      "description": "Rental applications"
+    },
+    "/agreements/{agreementId}": {
+      "schema": "Agreement",
+      "description": "Lease agreements"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Payment records"
+    },
+    "/commissions/{commissionId}": {
+      "schema": "Commission",
+      "description": "Agent commissions"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "MaintenanceTicket",
+      "description": "Maintenance requests"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/referrals/{referralId}": {
+      "schema": "Referral",
+      "description": "Agent referrals"
+    }
+  }
+}

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SPACEYA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              offwhite: '#F9FAFB',
+              brandblue: '#2563EB',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              playfair: ['Playfair Display', 'serif'],
+            },
+            backgroundImage: {
+              'liquid-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --glass-bg: rgba(255, 255, 255, 0.45);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --ui-p-base: 2.5rem;
+        --ui-gap: 2.5rem;
+      }
+      .dark {
+        --glass-bg: rgba(0, 0, 0, 0.45);
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Compact Mode Variables */
+      .ui-compact {
+        --ui-p-base: 1.25rem;
+        --ui-gap: 1.5rem;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f0f2f5;
+        overscroll-behavior-y: none;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+      }
+      .dark body {
+        background: #0a0a0c;
+      }
+
+      /* Liquid Background Elements */
+      .liquid-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(180deg, #f0f2f5 0%, #e0e5ec 100%);
+      }
+      .dark .liquid-bg {
+        background: linear-gradient(180deg, #0a0a0c 0%, #16161a 100%);
+      }
+
+      .blob {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+        filter: blur(80px);
+        border-radius: 50%;
+        z-index: -1;
+        animation: float 20s infinite alternate;
+      }
+      .blob-2 {
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+        right: -100px;
+        top: -100px;
+        animation-delay: -5s;
+      }
+      .blob-3 {
+        width: 500px;
+        height: 500px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+        left: -150px;
+        bottom: -150px;
+        animation-delay: -10s;
+      }
+
+      @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+        33% { transform: translate(100px, 50px) rotate(120deg) scale(1.1); }
+        66% { transform: translate(-50px, 150px) rotate(240deg) scale(0.9); }
+        100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+      }
+
+      /* Global Icon Interaction Engine */
+      svg {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      button:hover svg {
+        transform: scale(1.15);
+      }
+      button:active svg {
+        transform: scale(0.9);
+      }
+      
+      /* Disable Animations Override */
+      .disable-animations *, 
+      .disable-animations svg,
+      .disable-animations button:hover svg {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+
+      /* Specific Tool Animations */
+      button:hover .lucide-wrench {
+        transform: rotate(35deg) scale(1.2);
+      }
+      button:hover .lucide-bell {
+        animation: ring 0.5s ease-in-out infinite;
+      }
+      @keyframes ring {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(15deg); }
+        75% { transform: rotate(-15deg); }
+      }
+      button:hover .lucide-arrow-right {
+        transform: translateX(5px);
+      }
+      button:hover .lucide-arrow-left {
+        transform: translateX(-5px);
+      }
+      button:hover .lucide-plus {
+        transform: rotate(90deg) scale(1.2);
+      }
+      button:hover .lucide-refresh-cw {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+      }
+
+      /* Solid Mode Override */
+      .no-glass .glass-card {
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+      }
+      .dark.no-glass .glass-card {
+        background: #111113 !important;
+      }
+      
+      .glass-input {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      .no-glass .glass-input {
+        background: #f8fafc !important;
+        backdrop-filter: none !important;
+      }
+      .dark.no-glass .glass-input {
+        background: #000000 !important;
+      }
+
+      .glass-input:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #2563EB;
+        box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
+      }
+
+      @keyframes pulse-gentle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+      }
+      .animate-pulse-gentle {
+        animation: pulse-gentle 2s ease-in-out infinite;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(37, 99, 235, 0.2);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(37, 99, 235, 0.4);
+      }
+
+      * {
+        transition-property: background-color, border-color, color, fill, stroke, backdrop-filter, transform;
+        transition-duration: 300ms;
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "recharts": "https://esm.sh/recharts@^3.6.0"
+      }
+    }
+    </script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body class="antialiased">
+    <div class="liquid-bg">
+      <div class="blob"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (matches auth.uid)
+    // Fields: id, name, email, role, phone, etc.
+    //
+    // Collection: properties
+    // Document ID: propertyId
+    // Fields: id, name, location, rent, status, agentId, tenantId, etc.
+    //
+    // Collection: applications
+    // Document ID: applicationId
+    // Fields: id, userId, propertyId, agentId, status, etc.
+    //
+    // [Other collections follow similar patterns]
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN') ||
+          ('email' in request.auth.token && request.auth.token.email.toLower() == "davidjrnomache@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isAgent() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'AGENT';
+    }
+
+    function isTenant() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'TENANT';
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.id is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email) &&
+             data.role in ['ADMIN', 'AGENT', 'TENANT', 'LANDLORD', 'PROPERTY_MANAGER'];
+    }
+
+    function isValidProperty(data) {
+      return data.id is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.rent is number && data.rent >= 0 &&
+             data.status in ['DRAFT', 'LISTED', 'OCCUPIED', 'VACANT', 'ARCHIVED', 'LEGAL_REVIEW'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin() || (resource.data.role == 'AGENT');
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role != 'ADMIN' || isAdmin());
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /properties/{propertyId} {
+      allow read: if isAuthenticated();
+      allow create: if (isAdmin() || isAgent()) && isValidProperty(request.resource.data);
+      allow update: if (isAdmin() || (isAgent() && resource.data.agentId == request.auth.uid)) && isValidProperty(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.agentId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.agentId == request.auth.uid || isAdmin());
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (resource.data.tenantId == request.auth.uid || isAdmin() || isAgent());
+      allow create: if isAuthenticated() && isTenant();
+      allow update: if isAuthenticated() && (resource.data.tenantId == request.auth.uid || isAdmin() || isAgent());
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAdmin() || isAgent(); // Agents can notify tenants
+      allow update: if isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (resource.data.tenantId == request.auth.uid || isAdmin() || isAgent());
+      allow create: if isAdmin() || isAgent();
+      allow update: if isAdmin();
+    }
+    
+    match /commissions/{commissionId} {
+      allow read: if isAuthenticated() && (resource.data.agentId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() && (resource.data.referrerAgentId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() || isAgent();
+      allow update: if isAdmin();
+    }
+
+    match /agreements/{agreementId} {
+      allow read: if isAuthenticated() && (resource.data.tenantId == request.auth.uid || resource.data.agentId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() || isAgent();
+      allow update: if isAdmin() || isAgent();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
